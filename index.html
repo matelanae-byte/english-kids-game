@@ -109,8 +109,8 @@ button:active{transform:translateY(4px);box-shadow:0 4px 0 #18182d}
 }
 .small-note{margin-top:12px;font-size:13px;color:rgba(255,255,255,.6)}
 
-/* Mobile layout: avoid clipping on short screens */
-@media (max-height: 820px), (max-width: 480px){
+/* Mobile layout: only for narrow screens (phones), not short desktop windows */
+@media (max-width: 560px){
   body{align-items:stretch;justify-content:flex-start;padding:8px}
   .app{min-height:auto;max-height:calc(100dvh - 16px);border-radius:24px}
   .header{padding:14px 14px 10px}
@@ -129,7 +129,7 @@ button:active{transform:translateY(4px);box-shadow:0 4px 0 #18182d}
   .gold{box-shadow:0 6px 0 #b86d00}
   .danger{box-shadow:0 6px 0 #9f1239}
 }
-@media (max-height: 620px){
+@media (max-width: 560px) and (max-height: 620px){
   .character{width:72px;height:72px;font-size:40px}
   .emoji{font-size:48px;margin-bottom:6px}
   .title{font-size:20px}
@@ -226,17 +226,37 @@ function generateLesson(){
   tasks = shuffle(taskBank).slice(0, LESSON_SIZE);
 }
 
-function speak(text){
+function ttsAvailable(){
+  return typeof speechSynthesis !== "undefined" && typeof SpeechSynthesisUtterance !== "undefined";
+}
+
+function pickVoice(lang){
   try{
-    if(typeof speechSynthesis === "undefined" || typeof SpeechSynthesisUtterance === "undefined") return;
+    const voices = speechSynthesis.getVoices() || [];
+    return voices.find(v => v.lang && v.lang.toLowerCase().startsWith(lang.toLowerCase()));
+  } catch(e){ return null; }
+}
+
+function speakLang(text, lang, rate){
+  try{
+    if(!ttsAvailable()) return;
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = "ru-RU";
-    u.rate = 1;
+    u.lang = lang;
+    u.rate = rate || 1;
+    const v = pickVoice(lang);
+    if(v) u.voice = v;
     speechSynthesis.speak(u);
   } catch(e){
-    /* некоторые Android WebView не поддерживают TTS — просто молчим */
+    /* на некоторых Android WebView TTS недоступен — молчим */
   }
+}
+
+function speak(text){ speakLang(text, "ru-RU", 1); }
+function speakEn(text, rate){ speakLang(text, "en-US", rate || 0.9); }
+
+if(typeof speechSynthesis !== "undefined" && typeof speechSynthesis.onvoiceschanged !== "undefined"){
+  speechSynthesis.onvoiceschanged = () => { /* прогреваем список голосов */ };
 }
 
 function updateStats(){
@@ -381,21 +401,21 @@ function renderBuild(t){
   letters.forEach((letter, i) => {
     document.getElementById(`letter-${i}`).onclick = () => {
       if(inputLocked) return;
+      const btn = document.getElementById(`letter-${i}`);
+      if(!btn || btn.classList.contains("used")) return;
       const expected = t.word[index];
 
       if(letter === expected){
         current += letter;
         index++;
         document.getElementById("wordBox").textContent = current;
-        document.getElementById(`letter-${i}`).classList.add("used");
-        speak(letter);
-
-        // Можно нажать только правильную букву: остальные временно блокируем.
-        lockBuildLetters(t.word[index], letters);
+        btn.classList.add("used");
+        speakEn(letter, 0.85);
 
         if(current === t.word){
           inputLocked = true;
-          setTimeout(() => correctAnswer(), 400);
+          setTimeout(() => speakEn(t.word, 0.9), 250);
+          setTimeout(() => correctAnswer(), 1300);
         }
       } else {
         inputLocked = true;
@@ -408,16 +428,14 @@ function renderBuild(t){
       }
     };
   });
-
-  // На старте активна только первая буква
-  lockBuildLetters(t.word[0], letters);
 }
 
 function checkChoice(answer, correct){
   if(inputLocked) return;
   inputLocked = true;
   if(answer === correct){
-    correctAnswer();
+    speakEn(correct, 0.9);
+    setTimeout(() => correctAnswer(), 700);
   } else {
     wrongAnswer();
     setTimeout(() => {
@@ -434,11 +452,10 @@ function correctAnswer(){
   streak++;
   step++;
 
-  speak(`Правильно, ${safeName()}! Отличная работа.`);
   showFeedback("Correct! +10 XP", true);
   updateStats();
 
-  setTimeout(renderTask, 800);
+  setTimeout(renderTask, 900);
 }
 
 function wrongAnswer(){
@@ -544,18 +561,6 @@ function shuffle(arr){
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
-}
-
-function lockBuildLetters(expectedLetter, letters){
-  const container = document.getElementById("letters");
-  if(!container) return;
-  letters.forEach((letter, i) => {
-    const btn = document.getElementById(`letter-${i}`);
-    if(!btn) return;
-    const alreadyUsed = btn.classList.contains("used");
-    const shouldEnable = !alreadyUsed && letter === expectedLetter;
-    btn.disabled = !shouldEnable;
-  });
 }
 
 renderStart();
