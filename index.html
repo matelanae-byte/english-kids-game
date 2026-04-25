@@ -2,27 +2,34 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#111126" />
 <title>Word Detective Academy</title>
 <style>
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
 body{
-  margin:0;min-height:100vh;font-family:Inter,Arial,sans-serif;
+  margin:0;min-height:100vh;min-height:100dvh;font-family:Inter,Arial,sans-serif;
   background:radial-gradient(circle at top left,rgba(120,90,255,.35),transparent 35%),
   radial-gradient(circle at bottom right,rgba(0,255,190,.18),transparent 35%),
   linear-gradient(135deg,#111126,#191936 55%,#0d0d18);
   color:#fff;display:flex;align-items:center;justify-content:center;padding:16px;
+  overscroll-behavior:none;
 }
 .app{
-  width:100%;max-width:460px;min-height:720px;border-radius:34px;
-  background:rgba(255,255,255,.08);backdrop-filter:blur(20px);
+  width:100%;max-width:460px;height:auto;min-height:640px;max-height:calc(100dvh - 32px);
+  border-radius:34px;
+  background:rgba(255,255,255,.08);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   box-shadow:0 30px 90px rgba(0,0,0,.5);overflow:hidden;
   border:1px solid rgba(255,255,255,.14);
+  display:flex;flex-direction:column;
 }
-.app{display:flex;flex-direction:column}
 .header{
   padding:20px 18px 12px;background:rgba(0,0,0,.16);
   border-bottom:1px solid rgba(255,255,255,.08);
+  flex:0 0 auto;
 }
 .logo{text-align:center;font-size:20px;font-weight:900;margin-bottom:14px}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -33,7 +40,12 @@ body{
 .lesson-progress{margin-top:10px}
 .progress{margin-top:14px;height:11px;background:rgba(255,255,255,.14);border-radius:999px;overflow:hidden}
 .progress-fill{width:0%;height:100%;background:linear-gradient(90deg,#00f5a0,#00d9f5);transition:.35s}
-.screen{padding:20px 24px 28px;text-align:center;overflow:auto;-webkit-overflow-scrolling:touch}
+.screen{
+  padding:20px 24px 28px;text-align:center;
+  flex:1 1 auto;min-height:0;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
 .character{
   width:118px;height:118px;margin:10px auto 16px;border-radius:50%;
   background:linear-gradient(145deg,#ff7ad9,#ffc36b);
@@ -54,10 +66,14 @@ body{
 button{
   border:none;border-radius:19px;padding:15px 16px;font-size:16px;font-weight:850;
   cursor:pointer;color:white;background:linear-gradient(180deg,#383866,#29294f);
-  box-shadow:0 8px 0 #18182d;transition:.15s;
-  touch-action:manipulation;
+  box-shadow:0 8px 0 #18182d;transition:transform .12s, box-shadow .12s, opacity .12s;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  font-family:inherit;
 }
-button:hover{transform:translateY(-2px)}
+button:disabled{opacity:.55;cursor:not-allowed}
+@media (hover:hover){
+  button:hover{transform:translateY(-2px)}
+}
 button:active{transform:translateY(4px);box-shadow:0 4px 0 #18182d}
 .primary{background:linear-gradient(180deg,#00df9a,#00a978);box-shadow:0 8px 0 #007752}
 .gold{background:linear-gradient(180deg,#ffc857,#ff9f1c);box-shadow:0 8px 0 #b86d00}
@@ -94,13 +110,29 @@ button:active{transform:translateY(4px);box-shadow:0 4px 0 #18182d}
 .small-note{margin-top:12px;font-size:13px;color:rgba(255,255,255,.6)}
 
 /* Mobile layout: avoid clipping on short screens */
-@media (max-height: 760px), (max-width: 420px){
-  body{align-items:stretch;justify-content:flex-start}
-  .app{min-height:auto;max-height:calc(100dvh - 32px)}
-  .screen{padding:16px 18px 22px}
-  .title{font-size:24px}
-  .emoji{font-size:68px}
-  .character{width:104px;height:104px;font-size:56px}
+@media (max-height: 820px), (max-width: 480px){
+  body{align-items:stretch;justify-content:flex-start;padding:8px}
+  .app{min-height:auto;max-height:calc(100dvh - 16px);border-radius:24px}
+  .header{padding:14px 14px 10px}
+  .logo{font-size:17px;margin-bottom:10px}
+  .badge,.lesson-progress{font-size:13px;padding:9px 10px;border-radius:14px}
+  .screen{padding:14px 16px 20px}
+  .task-card{padding:16px;border-radius:22px;margin-top:12px}
+  .title{font-size:22px;margin:8px 0 6px}
+  .subtitle{font-size:14px}
+  .emoji{font-size:60px;margin-bottom:10px}
+  .question{font-size:17px;margin-bottom:14px}
+  .character{width:92px;height:92px;font-size:48px;margin:4px auto 10px}
+  .word-box{font-size:22px;letter-spacing:4px;padding:12px;min-height:52px}
+  button{padding:13px 14px;font-size:15px;box-shadow:0 6px 0 #18182d}
+  .primary{box-shadow:0 6px 0 #007752}
+  .gold{box-shadow:0 6px 0 #b86d00}
+  .danger{box-shadow:0 6px 0 #9f1239}
+}
+@media (max-height: 620px){
+  .character{width:72px;height:72px;font-size:40px}
+  .emoji{font-size:48px;margin-bottom:6px}
+  .title{font-size:20px}
 }
 </style>
 </head>
@@ -195,11 +227,16 @@ function generateLesson(){
 }
 
 function speak(text){
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "ru-RU";
-  u.rate = 1;
-  speechSynthesis.speak(u);
+  try{
+    if(typeof speechSynthesis === "undefined" || typeof SpeechSynthesisUtterance === "undefined") return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "ru-RU";
+    u.rate = 1;
+    speechSynthesis.speak(u);
+  } catch(e){
+    /* некоторые Android WebView не поддерживают TTS — просто молчим */
+  }
 }
 
 function updateStats(){
@@ -239,12 +276,15 @@ function renderStart(){
         <input
           class="name-input"
           id="nameInput"
+          type="text"
           autocomplete="given-name"
+          autocapitalize="words"
+          inputmode="text"
           maxlength="18"
-          placeholder="Как тебя зовут?"
+          placeholder="Как тебя зовут? (можно пропустить)"
           value="${(childName || "").replace(/"/g, "&quot;")}"
         />
-        <button class="primary" id="startBtn" onclick="startGame()">Start lesson</button>
+        <button type="button" class="primary" id="startBtn" onclick="startGame()">Start lesson</button>
       </div>
       <div class="small-note">После проигрыша задания будут другими.</div>
     </div>
@@ -253,13 +293,11 @@ function renderStart(){
   const input = document.getElementById("nameInput");
   const startBtn = document.getElementById("startBtn");
   const sync = () => {
-    const v = (input.value || "").trim();
-    setChildName(v);
-    startBtn.disabled = !v;
+    setChildName(input.value || "");
   };
   input.addEventListener("input", sync);
   input.addEventListener("keydown", (e) => {
-    if(e.key === "Enter" && !startBtn.disabled) startBtn.click();
+    if(e.key === "Enter") startBtn.click();
   });
   sync();
 }
@@ -310,7 +348,7 @@ function renderChoice(t){
     <div class="emoji">${t.emoji}</div>
     <div class="question">${safeName()}, выбери слово: <b>${t.ru}</b></div>
     <div class="answers">
-      ${shuffle(t.options).map(o => `<button onclick="checkChoice('${o}','${t.correct}')">${o}</button>`).join("")}
+      ${shuffle(t.options).map(o => `<button type="button" onclick="checkChoice('${o}','${t.correct}')">${o}</button>`).join("")}
     </div>
   `);
 }
@@ -321,7 +359,7 @@ function renderOdd(t){
     <div class="subtitle">Выбери слово, которое не подходит к группе</div>
     <br>
     <div class="answers">
-      ${shuffle(t.options).map(o => `<button onclick="checkChoice('${o}','${t.correct}')">${o}</button>`).join("")}
+      ${shuffle(t.options).map(o => `<button type="button" onclick="checkChoice('${o}','${t.correct}')">${o}</button>`).join("")}
     </div>
   `);
 }
@@ -336,7 +374,7 @@ function renderBuild(t){
     <div class="question">${safeName()}, собери слово: <b>${t.ru}</b></div>
     <div class="word-box" id="wordBox"></div>
     <div class="letters" id="letters">
-      ${letters.map((l,i) => `<button class="letter" id="letter-${i}">${l}</button>`).join("")}
+      ${letters.map((l,i) => `<button type="button" class="letter" id="letter-${i}">${l}</button>`).join("")}
     </div>
   `);
 
@@ -442,9 +480,9 @@ function renderPaywall(){
       Демо-уровень пройден. Открой полную игру с новыми словами, уровнями и наградами.
     </div>
     <div class="task-card">
-      <button class="gold" onclick="unlockGame()">💳 Купить доступ</button>
+      <button type="button" class="gold" onclick="unlockGame()">💳 Купить доступ</button>
       <br><br>
-      <button onclick="unlockGame()">Продолжить в демо</button>
+      <button type="button" onclick="unlockGame()">Продолжить в демо</button>
       <div class="small-note">Кнопка оплаты пока демо. Потом подключим настоящую оплату.</div>
     </div>
   `;
@@ -466,7 +504,7 @@ function renderGameOver(){
       ${safeName()}, жизни закончились. Начни заново — уровень тот же, но задания будут другими.
     </div>
     <div class="task-card">
-      <button class="danger" onclick="restart()">Restart lesson</button>
+      <button type="button" class="danger" onclick="restart()">Restart lesson</button>
     </div>
   `;
 }
@@ -483,7 +521,7 @@ function renderWin(){
       ${safeName()}, ты набрал(а) ${xp} XP и прошёл(шла) уровень Word Detective Academy.
     </div>
     <div class="task-card">
-      <button class="primary" onclick="restart()">Play again</button>
+      <button type="button" class="primary" onclick="restart()">Play again</button>
     </div>
   `;
 }
